@@ -53,7 +53,7 @@ var _ apis.Defaultable = (*Image)(nil)
 // ImageSpec holds the desired state of the Image (from the client).
 type ImageSpec struct {
 
-	// Image is the name of the container image reference to cache across the cluster.
+	// Image is the name of the container image url to cache across the cluster.
 	Image string `json:"image"`
 
 	// ServiceAccountName is the name of the Kubernetes ServiceAccount as which the Pods
@@ -154,6 +154,7 @@ func (rs *ImageStatus) SetCondition(new *ImageCondition) {
 	}
 	new.LastTransitionTime = apis.VolatileTime{metav1.NewTime(time.Now())}
 	conditions = append(conditions, *new)
+	// Deterministically order the conditions
 	sort.Slice(conditions, func(i, j int) bool { return conditions[i].Type < conditions[j].Type })
 	rs.Conditions = conditions
 }

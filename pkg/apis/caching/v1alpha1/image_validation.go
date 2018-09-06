@@ -31,6 +31,9 @@ func (rs *ImageSpec) Validate() *apis.FieldError {
 	if rs.Image == "" {
 		return apis.ErrMissingField("image")
 	}
+	// TODO(mattmoor): Consider using go-containerregistry to validate
+	// the image reference.  This is effectively the function we want.
+	// https://github.com/google/go-containerregistry/blob/2f3e3e1/pkg/name/ref.go#L41
 	if rs.ImagePullSecrets != nil {
 		if equality.Semantic.DeepEqual(rs.ImagePullSecrets, &corev1.LocalObjectReference{}) {
 			return apis.ErrMissingField("imagePullSecrets.name")

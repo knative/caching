@@ -17,8 +17,13 @@ package v1alpha1
 
 import (
 	"testing"
+	"time"
 
+	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/knative/pkg/apis"
 )
 
 func TestIsReady(t *testing.T) {
@@ -101,9 +106,11 @@ func TestIsReady(t *testing.T) {
 	}}
 
 	for _, tc := range cases {
-		if e, a := tc.isReady, tc.status.IsReady(); e != a {
-			t.Errorf("%q expected: %v got: %v", tc.name, e, a)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			if e, a := tc.isReady, tc.status.IsReady(); e != a {
+				t.Errorf("%q expected: %v got: %v", tc.name, e, a)
+			}
+		})
 	}
 }
 
@@ -144,5 +151,17 @@ func TestImageConditions(t *testing.T) {
 
 	if got, want := len(rev.Status.Conditions), 2; got != want {
 		t.Fatalf("Unexpected Condition length; got %d, want %d", got, want)
+	}
+
+	// Add a condition that varies only in LastTransitionTime, and check that
+	// things are not updated.
+	bar = rev.Status.GetCondition("Bar")
+	bar2 := bar.DeepCopy()
+	bar2.LastTransitionTime = apis.VolatileTime{metav1.NewTime(time.Unix(1234, 0))}
+	rev.Status.SetCondition(bar2)
+
+	got, want := rev.Status.GetCondition("Bar"), bar
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("Unexpected traffic diff (-want +got): %v", diff)
 	}
 }
