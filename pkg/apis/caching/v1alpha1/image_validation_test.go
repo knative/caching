@@ -47,10 +47,10 @@ func TestImageValidation(t *testing.T) {
 		r: &Image{
 			Spec: ImageSpec{
 				Image:            "busybox",
-				ImagePullSecrets: &corev1.LocalObjectReference{},
+				ImagePullSecrets: []corev1.LocalObjectReference{{}},
 			},
 		},
-		want: apis.ErrMissingField("spec.imagePullSecrets.name"),
+		want: apis.ErrMissingField("spec.imagePullSecrets[0].name"),
 	}}
 
 	for _, test := range tests {
