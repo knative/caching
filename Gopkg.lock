@@ -80,6 +80,21 @@
   revision = "24818f796faf91cd76ec7bddd72458fbced7a6c1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:b6b3bd1c08338cb397623d1b9dedde711eccc2d3408fe9017a495d815065d869"
+  name = "github.com/google/licenseclassifier"
+  packages = [
+    ".",
+    "internal/sets",
+    "stringclassifier",
+    "stringclassifier/internal/pq",
+    "stringclassifier/searchset",
+    "stringclassifier/searchset/tokenizer",
+  ]
+  pruneopts = "NUT"
+  revision = "c2a262e3078ad90718f59866f1ec18601b2fee1b"
+
+[[projects]]
   digest = "1:06a7dadb7b760767341ffb6c8d377238d68a1226f2b21b5d497d2e3f6ecf6b4e"
   name = "github.com/googleapis/gnostic"
   packages = [
@@ -133,11 +148,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:09521a823a008f7df66962ac2637c22e1cdc842ebfcc7a083c444d35258986f7"
+  digest = "1:da39b58557275d30a9340c2e1e13e16691461f9859d3230f59cceed411c04b49"
   name = "github.com/knative/test-infra"
-  packages = ["."]
-  pruneopts = "T"
-  revision = "7ed32409fa2c447a44a4281f0022ab25ce955f51"
+  packages = [
+    "scripts",
+    "tools/dep-collector",
+  ]
+  pruneopts = "UT"
+  revision = "89e4aae358be056ee70b595c20106a4a5c70fdc1"
 
 [[projects]]
   digest = "1:2f42fa12d6911c7b7659738758631bec870b7e9b4c6be5444f963cdcfccc191f"
@@ -170,6 +188,14 @@
   pruneopts = "NUT"
   revision = "5f041e8faa004a95c88a202771f4cc3e991971e6"
   version = "v2.0.1"
+
+[[projects]]
+  digest = "1:d917313f309bda80d27274d53985bc65651f81a5b66b820749ac7f8ef061fd04"
+  name = "github.com/sergi/go-diff"
+  packages = ["diffmatchpatch"]
+  pruneopts = "NUT"
+  revision = "1744e2970ca51c86172c8190fadad617561ed6e7"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:9d8420bbf131d1618bde6530af37c3799340d3762cc47210c1d9532a4c3a2779"
@@ -452,7 +478,8 @@
     "github.com/google/go-cmp/cmp",
     "github.com/knative/pkg/apis",
     "github.com/knative/pkg/kmeta",
-    "github.com/knative/test-infra",
+    "github.com/knative/test-infra/scripts",
+    "github.com/knative/test-infra/tools/dep-collector",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",
