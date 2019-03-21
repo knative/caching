@@ -17,9 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/knative/pkg/apis"
@@ -55,9 +55,12 @@ func TestImageValidation(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := test.r.Validate()
-			if diff := cmp.Diff(test.want, got); diff != "" {
-				t.Errorf("Validate (-want, +got) = %v", diff)
+			got := test.r.Validate(context.Background())
+			if (test.want == nil) != (got == nil) {
+				t.Fatalf("Validate() = %v, wanted %v", got, test.want)
+			}
+			if want, got := test.want.Error(), got.Error(); want != got {
+				t.Fatalf("Validate() = %v, wanted %v", got, want)
 			}
 		})
 	}
