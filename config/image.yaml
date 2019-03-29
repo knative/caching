@@ -17,7 +17,7 @@ kind: CustomResourceDefinition
 metadata:
   name: images.caching.internal.knative.dev
   labels:
-    knative.dev/crd-install: true
+    knative.dev/crd-install: "true"
 spec:
   group: caching.internal.knative.dev
   version: v1alpha1
