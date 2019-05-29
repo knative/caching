@@ -3,10 +3,6 @@ aliases:
   - evankanderson
   - mattmoor
   - vaikas-google
-  caching-reviewers:
-  - evankanderson
-  - mattmoor
-  - vaikas-google
 
   productivity-approvers:
   - adrcunha
