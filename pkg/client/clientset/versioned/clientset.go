@@ -19,7 +19,7 @@ limitations under the License.
 package versioned
 
 import (
-	cachingv1alpha1 "github.com/knative/caching/pkg/client/clientset/versioned/typed/caching/v1alpha1"
+	cachingv1alpha1 "knative.dev/caching/pkg/client/clientset/versioned/typed/caching/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

@@ -21,8 +21,8 @@ package fake
 import (
 	"context"
 
-	fake "github.com/knative/caching/pkg/client/clientset/versioned/fake"
-	client "github.com/knative/caching/pkg/client/injection/client"
+	fake "knative.dev/caching/pkg/client/clientset/versioned/fake"
+	client "knative.dev/caching/pkg/client/injection/client"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	injection "knative.dev/pkg/injection"
