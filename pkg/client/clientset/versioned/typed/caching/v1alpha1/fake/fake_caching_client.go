@@ -19,9 +19,9 @@ limitations under the License.
 package fake
 
 import (
-	v1alpha1 "knative.dev/caching/pkg/client/clientset/versioned/typed/caching/v1alpha1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
+	v1alpha1 "knative.dev/caching/pkg/client/clientset/versioned/typed/caching/v1alpha1"
 )
 
 type FakeCachingV1alpha1 struct {

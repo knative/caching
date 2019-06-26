@@ -19,14 +19,14 @@ limitations under the License.
 package fake
 
 import (
-	clientset "knative.dev/caching/pkg/client/clientset/versioned"
-	cachingv1alpha1 "knative.dev/caching/pkg/client/clientset/versioned/typed/caching/v1alpha1"
-	fakecachingv1alpha1 "knative.dev/caching/pkg/client/clientset/versioned/typed/caching/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
+	clientset "knative.dev/caching/pkg/client/clientset/versioned"
+	cachingv1alpha1 "knative.dev/caching/pkg/client/clientset/versioned/typed/caching/v1alpha1"
+	fakecachingv1alpha1 "knative.dev/caching/pkg/client/clientset/versioned/typed/caching/v1alpha1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
