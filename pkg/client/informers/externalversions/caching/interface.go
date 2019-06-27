@@ -19,8 +19,8 @@ limitations under the License.
 package caching
 
 import (
-	v1alpha1 "github.com/knative/caching/pkg/client/informers/externalversions/caching/v1alpha1"
-	internalinterfaces "github.com/knative/caching/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "knative.dev/caching/pkg/client/informers/externalversions/caching/v1alpha1"
+	internalinterfaces "knative.dev/caching/pkg/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to each of this group's versions.

@@ -21,8 +21,8 @@ package cachingfactory
 import (
 	"context"
 
-	externalversions "github.com/knative/caching/pkg/client/informers/externalversions"
-	client "github.com/knative/caching/pkg/client/injection/client"
+	externalversions "knative.dev/caching/pkg/client/informers/externalversions"
+	client "knative.dev/caching/pkg/client/injection/client"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"

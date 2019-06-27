@@ -19,12 +19,12 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/knative/caching/pkg/apis/caching/v1alpha1"
-	scheme "github.com/knative/caching/pkg/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
+	v1alpha1 "knative.dev/caching/pkg/apis/caching/v1alpha1"
+	scheme "knative.dev/caching/pkg/client/clientset/versioned/scheme"
 )
 
 // ImagesGetter has a method to return a ImageInterface.

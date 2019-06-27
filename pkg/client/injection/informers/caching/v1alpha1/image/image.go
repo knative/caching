@@ -21,8 +21,8 @@ package image
 import (
 	"context"
 
-	v1alpha1 "github.com/knative/caching/pkg/client/informers/externalversions/caching/v1alpha1"
-	factory "github.com/knative/caching/pkg/client/injection/informers/caching/factory"
+	v1alpha1 "knative.dev/caching/pkg/client/informers/externalversions/caching/v1alpha1"
+	factory "knative.dev/caching/pkg/client/injection/informers/caching/factory"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
