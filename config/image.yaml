@@ -26,7 +26,6 @@ spec:
     plural: images
     singular: image
     categories:
-    - all
     - knative-internal
     - caching
     shortNames:
