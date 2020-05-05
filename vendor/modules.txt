@@ -653,7 +653,7 @@ k8s.io/kube-openapi/pkg/util/sets
 k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/trace
-# knative.dev/pkg v0.0.0-20200504180943-4a2ba059b008
+# knative.dev/pkg v0.0.0-20200505191044-3da93ebb24c2
 knative.dev/pkg/apis
 knative.dev/pkg/changeset
 knative.dev/pkg/codegen/cmd/injection-gen
@@ -670,7 +670,7 @@ knative.dev/pkg/logging/logkey
 knative.dev/pkg/metrics
 knative.dev/pkg/metrics/metricskey
 knative.dev/pkg/reconciler
-# knative.dev/test-infra v0.0.0-20200505052144-5ea2f705bb55
+# knative.dev/test-infra v0.0.0-20200505192244-75864c82db21
 knative.dev/test-infra/scripts
 knative.dev/test-infra/tools/dep-collector
 # sigs.k8s.io/yaml v1.1.0
