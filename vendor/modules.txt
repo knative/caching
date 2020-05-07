@@ -244,6 +244,8 @@ golang.org/x/tools/internal/imports
 # golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
+# gomodules.xyz/jsonpatch/v2 v2.0.1
+gomodules.xyz/jsonpatch/v2
 # gonum.org/v1/gonum v0.0.0-20190331200053-3d26580ed485
 gonum.org/v1/gonum/blas
 gonum.org/v1/gonum/blas/blas64
@@ -444,6 +446,7 @@ k8s.io/apimachinery/third_party/forked/golang/reflect
 # k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible => k8s.io/client-go v0.16.4
 k8s.io/client-go/discovery
 k8s.io/client-go/discovery/fake
+k8s.io/client-go/dynamic
 k8s.io/client-go/informers
 k8s.io/client-go/informers/admissionregistration
 k8s.io/client-go/informers/admissionregistration/v1
@@ -653,8 +656,10 @@ k8s.io/kube-openapi/pkg/util/sets
 k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/trace
-# knative.dev/pkg v0.0.0-20200506001744-478962f05e2b
+# knative.dev/pkg v0.0.0-20200507011344-2581370e4a37
 knative.dev/pkg/apis
+knative.dev/pkg/apis/duck
+knative.dev/pkg/apis/duck/v1
 knative.dev/pkg/changeset
 knative.dev/pkg/codegen/cmd/injection-gen
 knative.dev/pkg/codegen/cmd/injection-gen/args
@@ -670,7 +675,8 @@ knative.dev/pkg/logging/logkey
 knative.dev/pkg/metrics
 knative.dev/pkg/metrics/metricskey
 knative.dev/pkg/reconciler
-# knative.dev/test-infra v0.0.0-20200506045344-e71b1288c15c
+knative.dev/pkg/tracker
+# knative.dev/test-infra v0.0.0-20200506231144-c8dd15bb7f0b
 knative.dev/test-infra/scripts
 knative.dev/test-infra/tools/dep-collector
 # sigs.k8s.io/yaml v1.1.0
