@@ -1,6 +1,6 @@
 module knative.dev/caching
 
-go 1.13
+go 1.14
 
 require (
 	github.com/c2h5oh/datasize v0.0.0-20200112174442-28bbd4740fee // indirect
