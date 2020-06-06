@@ -368,7 +368,7 @@ google.golang.org/grpc/tap
 gopkg.in/inf.v0
 # gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2
-# k8s.io/api v0.17.3 => k8s.io/api v0.16.4
+# k8s.io/api v0.17.6 => k8s.io/api v0.17.6
 ## explicit
 k8s.io/api/admissionregistration/v1
 k8s.io/api/admissionregistration/v1beta1
@@ -391,8 +391,10 @@ k8s.io/api/coordination/v1
 k8s.io/api/coordination/v1beta1
 k8s.io/api/core/v1
 k8s.io/api/discovery/v1alpha1
+k8s.io/api/discovery/v1beta1
 k8s.io/api/events/v1beta1
 k8s.io/api/extensions/v1beta1
+k8s.io/api/flowcontrol/v1alpha1
 k8s.io/api/networking/v1
 k8s.io/api/networking/v1beta1
 k8s.io/api/node/v1alpha1
@@ -408,7 +410,7 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apimachinery v0.17.3 => k8s.io/apimachinery v0.16.4
+# k8s.io/apimachinery v0.17.6 => k8s.io/apimachinery v0.17.6
 ## explicit
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
@@ -455,7 +457,7 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible => k8s.io/client-go v0.16.4
+# k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible => k8s.io/client-go v0.17.6
 ## explicit
 k8s.io/client-go/discovery
 k8s.io/client-go/discovery/fake
@@ -487,10 +489,13 @@ k8s.io/client-go/informers/core
 k8s.io/client-go/informers/core/v1
 k8s.io/client-go/informers/discovery
 k8s.io/client-go/informers/discovery/v1alpha1
+k8s.io/client-go/informers/discovery/v1beta1
 k8s.io/client-go/informers/events
 k8s.io/client-go/informers/events/v1beta1
 k8s.io/client-go/informers/extensions
 k8s.io/client-go/informers/extensions/v1beta1
+k8s.io/client-go/informers/flowcontrol
+k8s.io/client-go/informers/flowcontrol/v1alpha1
 k8s.io/client-go/informers/internalinterfaces
 k8s.io/client-go/informers/networking
 k8s.io/client-go/informers/networking/v1
@@ -537,8 +542,10 @@ k8s.io/client-go/kubernetes/typed/coordination/v1
 k8s.io/client-go/kubernetes/typed/coordination/v1beta1
 k8s.io/client-go/kubernetes/typed/core/v1
 k8s.io/client-go/kubernetes/typed/discovery/v1alpha1
+k8s.io/client-go/kubernetes/typed/discovery/v1beta1
 k8s.io/client-go/kubernetes/typed/events/v1beta1
 k8s.io/client-go/kubernetes/typed/extensions/v1beta1
+k8s.io/client-go/kubernetes/typed/flowcontrol/v1alpha1
 k8s.io/client-go/kubernetes/typed/networking/v1
 k8s.io/client-go/kubernetes/typed/networking/v1beta1
 k8s.io/client-go/kubernetes/typed/node/v1alpha1
@@ -571,8 +578,10 @@ k8s.io/client-go/listers/coordination/v1
 k8s.io/client-go/listers/coordination/v1beta1
 k8s.io/client-go/listers/core/v1
 k8s.io/client-go/listers/discovery/v1alpha1
+k8s.io/client-go/listers/discovery/v1beta1
 k8s.io/client-go/listers/events/v1beta1
 k8s.io/client-go/listers/extensions/v1beta1
+k8s.io/client-go/listers/flowcontrol/v1alpha1
 k8s.io/client-go/listers/networking/v1
 k8s.io/client-go/listers/networking/v1beta1
 k8s.io/client-go/listers/node/v1alpha1
@@ -610,7 +619,7 @@ k8s.io/client-go/util/flowcontrol
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/code-generator v0.18.0 => k8s.io/code-generator v0.16.4
+# k8s.io/code-generator v0.18.0 => k8s.io/code-generator v0.17.6
 ## explicit
 k8s.io/code-generator
 k8s.io/code-generator/cmd/client-gen
@@ -658,7 +667,7 @@ k8s.io/gengo/parser
 k8s.io/gengo/types
 # k8s.io/klog v1.0.0
 k8s.io/klog
-# k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a => k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
+# k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29 => k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
 ## explicit
 k8s.io/kube-openapi/cmd/openapi-gen
 k8s.io/kube-openapi/cmd/openapi-gen/args
@@ -698,10 +707,10 @@ knative.dev/test-infra/scripts
 knative.dev/test-infra/tools/dep-collector
 # sigs.k8s.io/yaml v1.1.0
 sigs.k8s.io/yaml
-# k8s.io/api => k8s.io/api v0.16.4
-# k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.16.4
-# k8s.io/apimachinery => k8s.io/apimachinery v0.16.4
-# k8s.io/apiserver => k8s.io/apiserver v0.16.4
-# k8s.io/client-go => k8s.io/client-go v0.16.4
-# k8s.io/code-generator => k8s.io/code-generator v0.16.4
-# k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
+# k8s.io/api => k8s.io/api v0.17.6
+# k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.6
+# k8s.io/apimachinery => k8s.io/apimachinery v0.17.6
+# k8s.io/apiserver => k8s.io/apiserver v0.17.6
+# k8s.io/client-go => k8s.io/client-go v0.17.6
+# k8s.io/code-generator => k8s.io/code-generator v0.17.6
+# k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
