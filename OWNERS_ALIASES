@@ -1,8 +1,10 @@
 aliases:
   caching-approvers:
   - evankanderson
+  - grantr
+  - markusthoemmes
   - mattmoor
-  - vaikas-google
+  - tcnghia
   - vaikas
 
   productivity-approvers:
