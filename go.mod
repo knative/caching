@@ -12,12 +12,12 @@ require (
 	github.com/tsenart/go-tsz v0.0.0-20180814235614-0bd30b3df1c3 // indirect
 	github.com/tsenart/vegeta v12.7.1-0.20190725001342-b5f4fca92137+incompatible
 	k8s.io/api v0.17.6
-	k8s.io/apimachinery v0.18.5
+	k8s.io/apimachinery v0.18.6
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.18.0
 	k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
-	knative.dev/pkg v0.0.0-20200721091635-3b7ca76a63e4
-	knative.dev/test-infra v0.0.0-20200720224135-d2706240545c
+	knative.dev/pkg v0.0.0-20200722085354-ba0f3cb7cf84
+	knative.dev/test-infra v0.0.0-20200721175154-c98db9bd4d5d
 )
 
 replace (
