@@ -11,13 +11,13 @@ require (
 	github.com/miekg/dns v1.1.29 // indirect
 	github.com/tsenart/go-tsz v0.0.0-20180814235614-0bd30b3df1c3 // indirect
 	github.com/tsenart/vegeta v12.7.1-0.20190725001342-b5f4fca92137+incompatible
-	k8s.io/api v0.17.6
-	k8s.io/apimachinery v0.18.6
+	k8s.io/api v0.18.7-rc.0
+	k8s.io/apimachinery v0.18.7-rc.0
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	k8s.io/code-generator v0.18.0
+	k8s.io/code-generator v0.18.6
 	k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
-	knative.dev/pkg v0.0.0-20200731005101-694087017879
-	knative.dev/test-infra v0.0.0-20200731141600-8bb2015c65e2
+	knative.dev/pkg v0.0.0-20200804051227-c3c869a34475
+	knative.dev/test-infra v0.0.0-20200803175002-5efff0c4bd0a
 )
 
 replace (
