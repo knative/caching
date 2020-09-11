@@ -20,7 +20,16 @@ metadata:
     knative.dev/crd-install: "true"
 spec:
   group: caching.internal.knative.dev
-  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    subresources:
+      status: {}
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
   names:
     kind: Image
     plural: images
@@ -31,5 +40,3 @@ spec:
     shortNames:
     - img
   scope: Namespaced
-  subresources:
-    status: {}
