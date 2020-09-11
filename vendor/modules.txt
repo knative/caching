@@ -752,7 +752,7 @@ k8s.io/kube-openapi/pkg/util/sets
 k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/trace
-# knative.dev/pkg v0.0.0-20200910010051-a79a813ce123
+# knative.dev/pkg v0.0.0-20200910143251-0761d6b47e4d
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck/ducktypes
@@ -776,7 +776,7 @@ knative.dev/pkg/metrics/metricskey
 knative.dev/pkg/network
 knative.dev/pkg/reconciler
 knative.dev/pkg/system
-# knative.dev/test-infra v0.0.0-20200909211651-72eb6ae3c773
+# knative.dev/test-infra v0.0.0-20200910231400-cfba2288403d
 ## explicit
 knative.dev/test-infra/scripts
 knative.dev/test-infra/tools/dep-collector
