@@ -27,7 +27,7 @@ export GO111MODULE=on
 export GOFLAGS=-mod=vendor
 
 # This controls the release branch we track.
-VERSION="master"
+VERSION="release-0.18"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
