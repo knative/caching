@@ -157,7 +157,9 @@ func TestImageConditions(t *testing.T) {
 	// things are not updated.
 	bar = rev.Status.GetCondition("Bar")
 	bar2 := bar.DeepCopy()
-	bar2.LastTransitionTime = apis.VolatileTime{metav1.NewTime(time.Unix(1234, 0))}
+	bar2.LastTransitionTime = apis.VolatileTime{
+		Inner: metav1.NewTime(time.Unix(1234, 0)),
+	}
 	rev.Status.SetCondition(bar2)
 
 	got, want := rev.Status.GetCondition("Bar"), bar

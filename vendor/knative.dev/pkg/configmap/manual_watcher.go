@@ -26,45 +26,39 @@ import (
 type ManualWatcher struct {
 	Namespace string
 
-	// Guards mutations to defaultImpl fields
-	m sync.Mutex
-
+	// Guards observers
+	m         sync.RWMutex
 	observers map[string][]Observer
 }
 
 var _ Watcher = (*ManualWatcher)(nil)
 
 // Watch implements Watcher
-func (w *ManualWatcher) Watch(name string, o Observer) {
+func (w *ManualWatcher) Watch(name string, o ...Observer) {
 	w.m.Lock()
 	defer w.m.Unlock()
 
 	if w.observers == nil {
-		w.observers = make(map[string][]Observer)
+		w.observers = make(map[string][]Observer, 1)
 	}
-
-	wl, _ := w.observers[name]
-	w.observers[name] = append(wl, o)
+	w.observers[name] = append(w.observers[name], o...)
 }
 
+// Start implements Watcher
 func (w *ManualWatcher) Start(<-chan struct{}) error {
 	return nil
 }
 
+// OnChange invokes the callbacks of all observers of the given ConfigMap.
 func (w *ManualWatcher) OnChange(configMap *corev1.ConfigMap) {
 	if configMap.Namespace != w.Namespace {
 		return
 	}
 	// Within our namespace, take the lock and see if there are any registered observers.
-	w.m.Lock()
-	defer w.m.Unlock()
-	observers, ok := w.observers[configMap.Name]
-	if !ok {
-		return // No observers.
-	}
-
+	w.m.RLock()
+	defer w.m.RUnlock()
 	// Iterate over the observers and invoke their callbacks.
-	for _, o := range observers {
+	for _, o := range w.observers[configMap.Name] {
 		o(configMap)
 	}
 }

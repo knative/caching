@@ -18,41 +18,22 @@ package metrics
 
 import (
 	"context"
-	"path"
 
 	"go.opencensus.io/stats"
-	"knative.dev/pkg/metrics/metricskey"
 )
 
-// Record decides whether to record one measurement via OpenCensus based on the
-// following conditions:
-//   1) No package level metrics config. In this case it just proxies to OpenCensus
-//      based on the assumption that users expect the metrics to be recorded when
-//      they call this function. Users must ensure metrics config are set before
-//      using this function to get expected behavior.
-//   2) The backend is not Stackdriver.
-//   3) The backend is Stackdriver and it is allowed to use custom metrics.
-//   4) The backend is Stackdriver and the metric is "knative_revison" built-in metric.
-func Record(ctx context.Context, ms stats.Measurement) {
-	mc := getCurMetricsConfig()
+// TODO should be properly refactored and pieces should move to eventing and serving, as appropriate.
+// 	See https://github.com/knative/pkg/issues/608
 
-	// Condition 1)
-	if mc == nil {
-		stats.Record(ctx, ms)
-		return
-	}
+// Record stores the given Measurement from `ms` in the current metrics backend.
+func Record(ctx context.Context, ms stats.Measurement, ros ...stats.Options) {
+	getCurMetricsConfig().record(ctx, []stats.Measurement{ms}, ros...)
+}
 
-	// Condition 2) and 3)
-	if !mc.isStackdriverBackend || mc.allowStackdriverCustomMetrics {
-		stats.Record(ctx, ms)
-		return
-	}
-
-	// Condition 4)
-	metricType := path.Join(mc.stackdriverMetricTypePrefix, ms.Measure().Name())
-	if metricskey.KnativeRevisionMetrics.Has(metricType) {
-		stats.Record(ctx, ms)
-	}
+// RecordBatch stores the given Measurements from `mss` in the current metrics backend.
+// All metrics should be reported using the same Resource.
+func RecordBatch(ctx context.Context, mss ...stats.Measurement) {
+	getCurMetricsConfig().record(ctx, mss)
 }
 
 // Buckets125 generates an array of buckets with approximate powers-of-two
@@ -60,8 +41,18 @@ func Record(ctx context.Context, ms stats.Measurement) {
 // be used to create a view.Distribution.
 func Buckets125(low, high float64) []float64 {
 	buckets := []float64{low}
-	for last := low; last < high; last = last * 10 {
+	for last := low; last < high; last *= 10 {
 		buckets = append(buckets, 2*last, 5*last, 10*last)
+	}
+	return buckets
+}
+
+// BucketsNBy10 generates an array of N buckets starting from low and
+// multiplying by 10 n times.
+func BucketsNBy10(low float64, n int) []float64 {
+	buckets := []float64{low}
+	for last, i := low, len(buckets); i < n; last, i = 10*last, i+1 {
+		buckets = append(buckets, 10*last)
 	}
 	return buckets
 }

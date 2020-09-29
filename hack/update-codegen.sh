@@ -18,9 +18,22 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-REPO_ROOT=$(dirname ${BASH_SOURCE})/..
-CODEGEN_PKG=${CODEGEN_PKG:-$(cd ${REPO_ROOT}; ls -d -1 ./vendor/k8s.io/code-generator 2>/dev/null || echo ../code-generator)}
-KNATIVE_CODEGEN_PKG=${KNATIVE_CODEGEN_PKG:-$(cd ${REPO_ROOT}; ls -d -1 ./vendor/knative.dev/pkg 2>/dev/null || echo ../pkg)}
+export GO111MODULE=on
+# If we run with -mod=vendor here, then generate-groups.sh looks for vendor files in the wrong place.
+export GOFLAGS=-mod=
+
+if [ -z "${GOPATH:-}" ]; then
+  export GOPATH=$(go env GOPATH)
+fi
+
+source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/library.sh
+
+CODEGEN_PKG=${CODEGEN_PKG:-$(cd ${REPO_ROOT_DIR}; ls -d -1 ./vendor/k8s.io/code-generator 2>/dev/null || echo ../code-generator)}
+
+KNATIVE_CODEGEN_PKG=${KNATIVE_CODEGEN_PKG:-$(cd ${REPO_ROOT_DIR}; ls -d -1 ./vendor/knative.dev/pkg 2>/dev/null || echo ../pkg)}
+
+chmod +x ${CODEGEN_PKG}/generate-groups.sh
+chmod +x ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh
 
 # generate the code with:
 # --output-base    because this script should also be able to run inside the vendor dir of
@@ -29,13 +42,13 @@ KNATIVE_CODEGEN_PKG=${KNATIVE_CODEGEN_PKG:-$(cd ${REPO_ROOT}; ls -d -1 ./vendor/
 ${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
   knative.dev/caching/pkg/client knative.dev/caching/pkg/apis \
   "caching:v1alpha1" \
-  --go-header-file ${REPO_ROOT}/hack/boilerplate/boilerplate.go.txt
+  --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt
 
 # Knative Injection
 ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh "injection" \
   knative.dev/caching/pkg/client knative.dev/caching/pkg/apis \
   "caching:v1alpha1" \
-  --go-header-file ${REPO_ROOT}/hack/boilerplate/boilerplate.go.txt
+  --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt
 
 # Make sure our dependencies are up-to-date
-${REPO_ROOT}/hack/update-deps.sh
+${REPO_ROOT_DIR}/hack/update-deps.sh

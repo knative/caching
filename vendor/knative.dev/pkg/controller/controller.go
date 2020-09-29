@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -27,14 +28,17 @@ import (
 	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
 	"knative.dev/pkg/kmeta"
+	kle "knative.dev/pkg/leaderelection"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/logging/logkey"
+	"knative.dev/pkg/reconciler"
 )
 
 const (
@@ -84,13 +88,75 @@ func HandleAll(h func(interface{})) cache.ResourceEventHandler {
 // Filter makes it simple to create FilterFunc's for use with
 // cache.FilteringResourceEventHandler that filter based on the
 // schema.GroupVersionKind of the controlling resources.
+//
+// Deprecated: Use FilterGroupVersionKind or FilterGroupKind instead
 func Filter(gvk schema.GroupVersionKind) func(obj interface{}) bool {
+	return FilterGroupVersionKind(gvk)
+}
+
+// FilterGroupVersionKind makes it simple to create FilterFunc's for use with
+// cache.FilteringResourceEventHandler that filter based on the
+// schema.GroupVersionKind of the controlling resources.
+//
+// Deprecated: Use FilterControllerGVK instead.
+func FilterGroupVersionKind(gvk schema.GroupVersionKind) func(obj interface{}) bool {
+	return FilterControllerGVK(gvk)
+}
+
+// FilterControllerGVK makes it simple to create FilterFunc's for use with
+// cache.FilteringResourceEventHandler that filter based on the
+// schema.GroupVersionKind of the controlling resources.
+func FilterControllerGVK(gvk schema.GroupVersionKind) func(obj interface{}) bool {
+	return func(obj interface{}) bool {
+		object, ok := obj.(metav1.Object)
+		if !ok {
+			return false
+		}
+
+		owner := metav1.GetControllerOf(object)
+		return owner != nil &&
+			owner.APIVersion == gvk.GroupVersion().String() &&
+			owner.Kind == gvk.Kind
+	}
+}
+
+// FilterGroupKind makes it simple to create FilterFunc's for use with
+// cache.FilteringResourceEventHandler that filter based on the
+// schema.GroupKind of the controlling resources.
+//
+// Deprecated: Use FilterControllerGK instead
+func FilterGroupKind(gk schema.GroupKind) func(obj interface{}) bool {
+	return FilterControllerGK(gk)
+}
+
+// FilterControllerGK makes it simple to create FilterFunc's for use with
+// cache.FilteringResourceEventHandler that filter based on the
+// schema.GroupKind of the controlling resources.
+func FilterControllerGK(gk schema.GroupKind) func(obj interface{}) bool {
+	return func(obj interface{}) bool {
+		object, ok := obj.(metav1.Object)
+		if !ok {
+			return false
+		}
+
+		owner := metav1.GetControllerOf(object)
+		if owner == nil {
+			return false
+		}
+
+		ownerGV, err := schema.ParseGroupVersion(owner.APIVersion)
+		return err == nil &&
+			ownerGV.Group == gk.Group &&
+			owner.Kind == gk.Kind
+	}
+}
+
+// FilterWithName makes it simple to create FilterFunc's for use with
+// cache.FilteringResourceEventHandler that filter based on a name.
+func FilterWithName(name string) func(obj interface{}) bool {
 	return func(obj interface{}) bool {
 		if object, ok := obj.(metav1.Object); ok {
-			owner := metav1.GetControllerOf(object)
-			return owner != nil &&
-				owner.APIVersion == gvk.GroupVersion().String() &&
-				owner.Kind == gvk.Kind
+			return name == object.GetName()
 		}
 		return false
 	}
@@ -111,16 +177,22 @@ func FilterWithNameAndNamespace(namespace, name string) func(obj interface{}) bo
 // Impl is our core controller implementation.  It handles queuing and feeding work
 // from the queue to an implementation of Reconciler.
 type Impl struct {
+	// Name is the unique name for this controller workqueue within this process.
+	// This is used for surfacing metrics, and per-controller leader election.
+	Name string
+
 	// Reconciler is the workhorse of this controller, it is fed the keys
 	// from the workqueue to process.  Public for testing.
 	Reconciler Reconciler
 
-	// WorkQueue is a rate limited work queue. This is used to queue work to be
-	// processed instead of performing it as soon as a change happens. This
-	// means we can ensure we only process a fixed amount of resources at a
-	// time, and makes it easy to ensure we are never processing the same item
-	// simultaneously in two different workers.
-	WorkQueue workqueue.RateLimitingInterface
+	// workQueue is a rate-limited two-lane work queue.
+	// This is used to queue work to be processed instead of performing it as
+	// soon as a change happens. This means we can ensure we only process a
+	// fixed amount of resources at a time, and makes it easy to ensure we are
+	// never processing the same item simultaneously in two different workers.
+	// The slow queue is used for global resync and other background processes
+	// which are not required to complete at the highest priority.
+	workQueue *twoLaneQueue
 
 	// Sugared logger is easier to use but is not as performant as the
 	// raw logger. In performance critical paths, call logger.Desugar()
@@ -133,44 +205,100 @@ type Impl struct {
 	statsReporter StatsReporter
 }
 
-// NewImpl instantiates an instance of our controller that will feed work to the
-// provided Reconciler as it is enqueued.
-func NewImpl(r Reconciler, logger *zap.SugaredLogger, workQueueName string) *Impl {
-	return NewImplWithStats(r, logger, workQueueName, MustNewStatsReporter(workQueueName, logger))
+// ControllerOptions encapsulates options for creating a new controller,
+// including throttling and stats behavior.
+type ControllerOptions struct {
+	WorkQueueName string
+	Logger        *zap.SugaredLogger
+	Reporter      StatsReporter
+	RateLimiter   workqueue.RateLimiter
 }
 
+// NewImpl instantiates an instance of our controller that will feed work to the
+// provided Reconciler as it is enqueued.
+// Deprecated: use NewImplFull.
+func NewImpl(r Reconciler, logger *zap.SugaredLogger, workQueueName string) *Impl {
+	return NewImplFull(r, ControllerOptions{WorkQueueName: workQueueName, Logger: logger})
+}
+
+// NewImplWithStats creates a controller.Impl with stats reporter.
+// Deprecated: use NewImplFull.
 func NewImplWithStats(r Reconciler, logger *zap.SugaredLogger, workQueueName string, reporter StatsReporter) *Impl {
-	return &Impl{
-		Reconciler: r,
-		WorkQueue: workqueue.NewNamedRateLimitingQueue(
-			workqueue.DefaultControllerRateLimiter(),
-			workQueueName,
-		),
-		logger:        logger,
-		statsReporter: reporter,
+	return NewImplFull(r, ControllerOptions{WorkQueueName: workQueueName, Logger: logger, Reporter: reporter})
+}
+
+// NewImplFull accepts the full set of options available to all controllers.
+func NewImplFull(r Reconciler, options ControllerOptions) *Impl {
+	logger := options.Logger.Named(options.WorkQueueName)
+	if options.RateLimiter == nil {
+		options.RateLimiter = workqueue.DefaultControllerRateLimiter()
 	}
+	if options.Reporter == nil {
+		options.Reporter = MustNewStatsReporter(options.WorkQueueName, options.Logger)
+	}
+	return &Impl{
+		Name:          options.WorkQueueName,
+		Reconciler:    r,
+		workQueue:     newTwoLaneWorkQueue(options.WorkQueueName, options.RateLimiter),
+		logger:        logger,
+		statsReporter: options.Reporter,
+	}
+}
+
+// WorkQueue permits direct access to the work queue.
+func (c *Impl) WorkQueue() workqueue.RateLimitingInterface {
+	return c.workQueue
 }
 
 // EnqueueAfter takes a resource, converts it into a namespace/name string,
 // and passes it to EnqueueKey.
 func (c *Impl) EnqueueAfter(obj interface{}, after time.Duration) {
-	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+	object, err := kmeta.DeletionHandlingAccessor(obj)
 	if err != nil {
 		c.logger.Errorw("Enqueue", zap.Error(err))
 		return
 	}
-	c.EnqueueKeyAfter(key, after)
+	c.EnqueueKeyAfter(types.NamespacedName{Namespace: object.GetNamespace(), Name: object.GetName()}, after)
+}
+
+// EnqueueSlowKey takes a resource, converts it into a namespace/name string,
+// and enqueues that key in the slow lane.
+func (c *Impl) EnqueueSlowKey(key types.NamespacedName) {
+	c.workQueue.SlowLane().Add(key)
+	c.logger.With(zap.String(logkey.Key, key.String())).
+		Debugf("Adding to the slow queue %s (depth(total/slow): %d/%d)",
+			safeKey(key), c.workQueue.Len(), c.workQueue.SlowLane().Len())
+}
+
+// EnqueueSlow extracts namesspeced name from the object and enqueues it on the slow
+// work queue.
+func (c *Impl) EnqueueSlow(obj interface{}) {
+	object, err := kmeta.DeletionHandlingAccessor(obj)
+	if err != nil {
+		c.logger.Errorw("EnqueueSlow", zap.Error(err))
+		return
+	}
+	key := types.NamespacedName{Namespace: object.GetNamespace(), Name: object.GetName()}
+	c.EnqueueSlowKey(key)
 }
 
 // Enqueue takes a resource, converts it into a namespace/name string,
 // and passes it to EnqueueKey.
 func (c *Impl) Enqueue(obj interface{}) {
-	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+	object, err := kmeta.DeletionHandlingAccessor(obj)
 	if err != nil {
 		c.logger.Errorw("Enqueue", zap.Error(err))
 		return
 	}
-	c.EnqueueKey(key)
+	c.EnqueueKey(types.NamespacedName{Namespace: object.GetNamespace(), Name: object.GetName()})
+}
+
+// EnqueueSentinel returns a Enqueue method which will always enqueue a
+// predefined key instead of the object key.
+func (c *Impl) EnqueueSentinel(k types.NamespacedName) func(interface{}) {
+	return func(interface{}) {
+		c.EnqueueKey(k)
+	}
 }
 
 // EnqueueControllerOf takes a resource, identifies its controller resource,
@@ -185,7 +313,7 @@ func (c *Impl) EnqueueControllerOf(obj interface{}) {
 	// If we can determine the controller ref of this object, then
 	// add that object to our workqueue.
 	if owner := metav1.GetControllerOf(object); owner != nil {
-		c.EnqueueKey(object.GetNamespace() + "/" + owner.Name)
+		c.EnqueueKey(types.NamespacedName{Namespace: object.GetNamespace(), Name: owner.Name})
 	}
 }
 
@@ -217,14 +345,14 @@ func (c *Impl) EnqueueLabelOfNamespaceScopedResource(namespaceLabel, nameLabel s
 				return
 			}
 
-			c.EnqueueKey(fmt.Sprintf("%s/%s", controllerNamespace, controllerKey))
+			c.EnqueueKey(types.NamespacedName{Namespace: controllerNamespace, Name: controllerKey})
 			return
 		}
 
 		// Pass through namespace of the object itself if no namespace label specified.
 		// This is for the scenario that object and the parent resource are of same namespace,
 		// e.g. to enqueue the revision of an endpoint.
-		c.EnqueueKey(fmt.Sprintf("%s/%s", object.GetNamespace(), controllerKey))
+		c.EnqueueKey(types.NamespacedName{Namespace: object.GetNamespace(), Name: controllerKey})
 	}
 }
 
@@ -248,33 +376,74 @@ func (c *Impl) EnqueueLabelOfClusterScopedResource(nameLabel string) func(obj in
 			return
 		}
 
-		c.EnqueueKey(controllerKey)
+		c.EnqueueKey(types.NamespacedName{Namespace: "", Name: controllerKey})
 	}
 }
 
+// EnqueueNamespaceOf takes a resource, and enqueues the Namespace to which it belongs.
+func (c *Impl) EnqueueNamespaceOf(obj interface{}) {
+	object, err := kmeta.DeletionHandlingAccessor(obj)
+	if err != nil {
+		c.logger.Errorw("EnqueueNamespaceOf", zap.Error(err))
+		return
+	}
+	c.EnqueueKey(types.NamespacedName{Name: object.GetNamespace()})
+}
+
 // EnqueueKey takes a namespace/name string and puts it onto the work queue.
-func (c *Impl) EnqueueKey(key string) {
-	c.WorkQueue.Add(key)
+func (c *Impl) EnqueueKey(key types.NamespacedName) {
+	c.workQueue.Add(key)
+	c.logger.With(zap.String(logkey.Key, key.String())).
+		Debugf("Adding to queue %s (depth: %d)", safeKey(key), c.workQueue.Len())
+}
+
+// MaybeEnqueueBucketKey takes a Bucket and namespace/name string and puts it onto
+// the slow work queue.
+func (c *Impl) MaybeEnqueueBucketKey(bkt reconciler.Bucket, key types.NamespacedName) {
+	if bkt.Has(key) {
+		c.EnqueueSlowKey(key)
+	}
 }
 
 // EnqueueKeyAfter takes a namespace/name string and schedules its execution in
 // the work queue after given delay.
-func (c *Impl) EnqueueKeyAfter(key string, delay time.Duration) {
-	c.WorkQueue.AddAfter(key, delay)
+func (c *Impl) EnqueueKeyAfter(key types.NamespacedName, delay time.Duration) {
+	c.workQueue.AddAfter(key, delay)
+	c.logger.With(zap.String(logkey.Key, key.String())).
+		Debugf("Adding to queue %s (delay: %v, depth: %d)", safeKey(key), delay, c.workQueue.Len())
 }
 
-// Run starts the controller's worker threads, the number of which is threadiness.
-// It then blocks until stopCh is closed, at which point it shuts down its internal
-// work queue and waits for workers to finish processing their current work items.
-func (c *Impl) Run(threadiness int, stopCh <-chan struct{}) error {
-	defer runtime.HandleCrash()
+// RunContext starts the controller's worker threads, the number of which is threadiness.
+// If the context has been decorated for LeaderElection, then an elector is built and run.
+// It then blocks until the context is cancelled, at which point it shuts down its
+// internal work queue and waits for workers to finish processing their current
+// work items.
+func (c *Impl) RunContext(ctx context.Context, threadiness int) error {
 	sg := sync.WaitGroup{}
-	defer sg.Wait()
-	defer c.WorkQueue.ShutDown()
+	defer func() {
+		c.workQueue.ShutDown()
+		for c.workQueue.Len() > 0 {
+			time.Sleep(time.Millisecond * 100)
+		}
+		sg.Wait()
+		runtime.HandleCrash()
+	}()
+
+	if la, ok := c.Reconciler.(reconciler.LeaderAware); ok {
+		// Build and execute an elector.
+		le, err := kle.BuildElector(ctx, la, c.Name, c.MaybeEnqueueBucketKey)
+		if err != nil {
+			return err
+		}
+		sg.Add(1)
+		go func() {
+			defer sg.Done()
+			le.Run(ctx)
+		}()
+	}
 
 	// Launch workers to process resources that get enqueued to our workqueue.
-	logger := c.logger
-	logger.Info("Starting controller and workers")
+	c.logger.Info("Starting controller and workers")
 	for i := 0; i < threadiness; i++ {
 		sg.Add(1)
 		go func() {
@@ -284,32 +453,39 @@ func (c *Impl) Run(threadiness int, stopCh <-chan struct{}) error {
 		}()
 	}
 
-	logger.Info("Started workers")
-	<-stopCh
-	logger.Info("Shutting down workers")
+	c.logger.Info("Started workers")
+	<-ctx.Done()
+	c.logger.Info("Shutting down workers")
 
 	return nil
+}
+
+// DEPRECATED use RunContext instead.
+func (c *Impl) Run(threadiness int, stopCh <-chan struct{}) error {
+	// Create a context that is cancelled when the stopCh is called.
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		<-stopCh
+		cancel()
+	}()
+	return c.RunContext(ctx, threadiness)
 }
 
 // processNextWorkItem will read a single work item off the workqueue and
 // attempt to process it, by calling Reconcile on our Reconciler.
 func (c *Impl) processNextWorkItem() bool {
-	obj, shutdown := c.WorkQueue.Get()
+	obj, shutdown := c.workQueue.Get()
 	if shutdown {
 		return false
 	}
-	key := obj.(string)
+	key := obj.(types.NamespacedName)
+	keyStr := safeKey(key)
+
+	c.logger.Debugf("Processing from queue %s (depth: %d)", safeKey(key), c.workQueue.Len())
 
 	startTime := time.Now()
 	// Send the metrics for the current queue depth
-	c.statsReporter.ReportQueueDepth(int64(c.WorkQueue.Len()))
-
-	// We call Done here so the workqueue knows we have finished
-	// processing this item. We also must remember to call Forget if
-	// reconcile succeeds. If a transient error occurs, we do not call
-	// Forget and put the item back to the queue with an increased
-	// delay.
-	defer c.WorkQueue.Done(key)
+	c.statsReporter.ReportQueueDepth(int64(c.workQueue.Len()))
 
 	var err error
 	defer func() {
@@ -317,52 +493,76 @@ func (c *Impl) processNextWorkItem() bool {
 		if err != nil {
 			status = falseString
 		}
-		c.statsReporter.ReportReconcile(time.Since(startTime), key, status)
+		c.statsReporter.ReportReconcile(time.Since(startTime), status)
+
+		// We call Done here so the workqueue knows we have finished
+		// processing this item. We also must remember to call Forget if
+		// reconcile succeeds. If a transient error occurs, we do not call
+		// Forget and put the item back to the queue with an increased
+		// delay.
+		c.workQueue.Done(key)
 	}()
 
 	// Embed the key into the logger and attach that to the context we pass
 	// to the Reconciler.
-	logger := c.logger.With(zap.String(logkey.TraceId, uuid.New().String()), zap.String(logkey.Key, key))
-	ctx := logging.WithLogger(context.TODO(), logger)
+	logger := c.logger.With(zap.String(logkey.TraceId, uuid.New().String()), zap.String(logkey.Key, keyStr))
+	ctx := logging.WithLogger(context.Background(), logger)
 
 	// Run Reconcile, passing it the namespace/name string of the
 	// resource to be synced.
-	if err = c.Reconciler.Reconcile(ctx, key); err != nil {
+	if err = c.Reconciler.Reconcile(ctx, keyStr); err != nil {
 		c.handleErr(err, key)
-		logger.Infof("Reconcile failed. Time taken: %v.", time.Since(startTime))
+		logger.Info("Reconcile failed. Time taken: ", time.Since(startTime))
 		return true
 	}
 
 	// Finally, if no error occurs we Forget this item so it does not
 	// have any delay when another change happens.
-	c.WorkQueue.Forget(key)
-	logger.Infof("Reconcile succeeded. Time taken: %v.", time.Since(startTime))
+	c.workQueue.Forget(key)
+	logger.Info("Reconcile succeeded. Time taken: ", time.Since(startTime))
 
 	return true
 }
 
-func (c *Impl) handleErr(err error, key string) {
+func (c *Impl) handleErr(err error, key types.NamespacedName) {
 	c.logger.Errorw("Reconcile error", zap.Error(err))
 
-	// Re-queue the key if it's an transient error.
-	if !IsPermanentError(err) {
-		c.WorkQueue.AddRateLimited(key)
+	// Re-queue the key if it's a transient error.
+	// We want to check that the queue is shutting down here
+	// since controller Run might have exited by now (since while this item was
+	// being processed, queue.Len==0).
+	if !IsPermanentError(err) && !c.workQueue.ShuttingDown() {
+		c.workQueue.AddRateLimited(key)
+		c.logger.Debugf("Requeuing key %s due to non-permanent error (depth: %d)", safeKey(key), c.workQueue.Len())
 		return
 	}
 
-	c.WorkQueue.Forget(key)
+	c.workQueue.Forget(key)
 }
 
-// GlobalResync enqueues all objects from the passed SharedInformer
+// GlobalResync enqueues into the slow lane all objects from the passed SharedInformer
 func (c *Impl) GlobalResync(si cache.SharedInformer) {
-	for _, key := range si.GetStore().ListKeys() {
-		c.EnqueueKey(key)
+	alwaysTrue := func(interface{}) bool { return true }
+	c.FilteredGlobalResync(alwaysTrue, si)
+}
+
+// FilteredGlobalResync enqueues all objects from the
+// SharedInformer that pass the filter function in to the slow queue.
+func (c *Impl) FilteredGlobalResync(f func(interface{}) bool, si cache.SharedInformer) {
+	if c.workQueue.ShuttingDown() {
+		return
+	}
+	list := si.GetStore().List()
+	for _, obj := range list {
+		if f(obj) {
+			c.EnqueueSlow(obj)
+		}
 	}
 }
 
 // NewPermanentError returns a new instance of permanentError.
-// Users can wrap an error as permanentError with this in reconcile,
-// when he does not expect the key to get re-queued.
+// Users can wrap an error as permanentError with this in reconcile
+// when they do not expect the key to get re-queued.
 func NewPermanentError(err error) error {
 	return permanentError{e: err}
 }
@@ -373,15 +573,20 @@ type permanentError struct {
 	e error
 }
 
-// IsPermanentError returns true if given error is permanentError
+// IsPermanentError returns true if the given error is a permanentError or
+// wraps a permanentError.
 func IsPermanentError(err error) bool {
-	switch err.(type) {
-	case permanentError:
-		return true
-	default:
-		return false
-	}
+	return errors.Is(err, permanentError{})
 }
+
+// Is implements the Is() interface of error. It returns whether the target
+// error can be treated as equivalent to a permanentError.
+func (permanentError) Is(target error) bool {
+	_, ok := target.(permanentError)
+	return ok
+}
+
+var _ error = permanentError{}
 
 // Error implements the Error() interface of error.
 func (err permanentError) Error() string {
@@ -390,6 +595,12 @@ func (err permanentError) Error() string {
 	}
 
 	return err.e.Error()
+}
+
+// Unwrap implements the Unwrap() interface of error. It returns the error
+// wrapped inside permanentError.
+func (err permanentError) Unwrap() error {
+	return err.e
 }
 
 // Informer is the group of methods that a type must implement to be passed to
@@ -409,21 +620,42 @@ func StartInformers(stopCh <-chan struct{}, informers ...Informer) error {
 
 	for i, informer := range informers {
 		if ok := cache.WaitForCacheSync(stopCh, informer.HasSynced); !ok {
-			return fmt.Errorf("Failed to wait for cache at index %d to sync", i)
+			return fmt.Errorf("failed to wait for cache at index %d to sync", i)
 		}
 	}
 	return nil
 }
 
+// RunInformers kicks off all of the passed informers and then waits for all of
+// them to synchronize. Returned function will wait for all informers to finish.
+func RunInformers(stopCh <-chan struct{}, informers ...Informer) (func(), error) {
+	var wg sync.WaitGroup
+	wg.Add(len(informers))
+	for _, informer := range informers {
+		informer := informer
+		go func() {
+			defer wg.Done()
+			informer.Run(stopCh)
+		}()
+	}
+
+	for i, informer := range informers {
+		if ok := cache.WaitForCacheSync(stopCh, informer.HasSynced); !ok {
+			return wg.Wait, fmt.Errorf("failed to wait for cache at index %d to sync", i)
+		}
+	}
+	return wg.Wait, nil
+}
+
 // StartAll kicks off all of the passed controllers with DefaultThreadsPerController.
-func StartAll(stopCh <-chan struct{}, controllers ...*Impl) {
+func StartAll(ctx context.Context, controllers ...*Impl) {
 	wg := sync.WaitGroup{}
 	// Start all of the controllers.
 	for _, ctrlr := range controllers {
 		wg.Add(1)
 		go func(c *Impl) {
 			defer wg.Done()
-			c.Run(DefaultThreadsPerController, stopCh)
+			c.RunContext(ctx, DefaultThreadsPerController)
 		}(ctrlr)
 	}
 	wg.Wait()
@@ -471,4 +703,11 @@ func GetEventRecorder(ctx context.Context) record.EventRecorder {
 		return nil
 	}
 	return untyped.(record.EventRecorder)
+}
+
+func safeKey(key types.NamespacedName) string {
+	if key.Namespace == "" {
+		return key.Name
+	}
+	return key.String()
 }

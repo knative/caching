@@ -19,13 +19,15 @@ package controller
 import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/tools/cache"
 
 	"knative.dev/pkg/kmeta"
 )
 
+// Callback is a function that is passed to an informer's event handler.
 type Callback func(interface{})
 
+// EnsureTypeMeta augments the passed-in callback, ensuring that all objects that pass
+// through this callback have their TypeMeta set according to the provided GVK.
 func EnsureTypeMeta(f Callback, gvk schema.GroupVersionKind) Callback {
 	apiVersion, kind := gvk.ToAPIVersionAndKind()
 
@@ -35,12 +37,23 @@ func EnsureTypeMeta(f Callback, gvk schema.GroupVersionKind) Callback {
 			// TODO: We should consider logging here.
 			return
 		}
-		// We need to populated TypeMeta, but cannot trample the
+
+		accessor, err := meta.TypeAccessor(typed)
+		if err != nil {
+			return
+		}
+
+		// If TypeMeta is already what we want, exit early.
+		if accessor.GetAPIVersion() == apiVersion && accessor.GetKind() == kind {
+			f(typed)
+			return
+		}
+
+		// We need to populate TypeMeta, but cannot trample the
 		// informer's copy.
-		// TODO(mattmoor): Avoid the copy if TypeMeta is set.
 		copy := typed.DeepCopyObject()
 
-		accessor, err := meta.TypeAccessor(copy)
+		accessor, err = meta.TypeAccessor(copy)
 		if err != nil {
 			return
 		}
@@ -49,19 +62,5 @@ func EnsureTypeMeta(f Callback, gvk schema.GroupVersionKind) Callback {
 
 		// Pass in the mutated copy (accessor is not just a type cast)
 		f(copy)
-	}
-}
-
-// SendGlobalUpdates triggers an update event for all objects from the
-// passed SharedInformer.
-//
-// Since this is triggered not by a real update of these objects
-// themselves, we have no way of knowing the change to these objects
-// if any, so we call handler.OnUpdate(obj, obj) for all of them
-// regardless if they have changes or not.
-func SendGlobalUpdates(si cache.SharedInformer, handler cache.ResourceEventHandler) {
-	store := si.GetStore()
-	for _, obj := range store.List() {
-		handler.OnUpdate(obj, obj)
 	}
 }

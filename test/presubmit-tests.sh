@@ -21,7 +21,9 @@
 # Use the flags --build-tests, --unit-tests and --integration-tests
 # to run a specific set of tests.
 
-source $(dirname $0)/../vendor/github.com/knative/test-infra/scripts/presubmit-tests.sh
+export GO111MODULE=on
+
+source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/presubmit-tests.sh
 
 # TODO(mattmoor): integration tests
 
