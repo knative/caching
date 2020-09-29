@@ -162,6 +162,6 @@ func TestImageConditions(t *testing.T) {
 
 	got, want := rev.Status.GetCondition("Bar"), bar
 	if diff := cmp.Diff(want, got); diff != "" {
-		t.Errorf("Unexpected traffic diff (-want +got): %v", diff)
+		t.Error("Unexpected traffic diff (-want +got):", diff)
 	}
 }

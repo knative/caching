@@ -39,7 +39,7 @@ func TestImageDefaulting(t *testing.T) {
 			got := test.in
 			got.SetDefaults(context.Background())
 			if diff := cmp.Diff(test.want, got); diff != "" {
-				t.Errorf("SetDefaults (-want, +got) = %v", diff)
+				t.Error("SetDefaults (-want, +got) =", diff)
 			}
 		})
 	}
