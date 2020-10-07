@@ -137,6 +137,8 @@ github.com/grpc-ecosystem/grpc-gateway/utilities
 # github.com/hashicorp/golang-lru v0.5.4
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
+# github.com/imdario/mergo v0.3.9
+github.com/imdario/mergo
 # github.com/influxdata/tdigest v0.0.1
 ## explicit
 github.com/influxdata/tdigest
@@ -279,6 +281,8 @@ golang.org/x/tools/internal/imports
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
+# gomodules.xyz/jsonpatch/v2 v2.1.0
+gomodules.xyz/jsonpatch/v2
 # google.golang.org/api v0.31.0
 google.golang.org/api/internal
 google.golang.org/api/iterator
@@ -503,6 +507,7 @@ k8s.io/apimachinery/third_party/forked/golang/reflect
 ## explicit
 k8s.io/client-go/discovery
 k8s.io/client-go/discovery/fake
+k8s.io/client-go/dynamic
 k8s.io/client-go/informers
 k8s.io/client-go/informers/admissionregistration
 k8s.io/client-go/informers/admissionregistration/v1
@@ -646,8 +651,12 @@ k8s.io/client-go/plugin/pkg/client/auth/exec
 k8s.io/client-go/rest
 k8s.io/client-go/rest/watch
 k8s.io/client-go/testing
+k8s.io/client-go/tools/auth
 k8s.io/client-go/tools/cache
+k8s.io/client-go/tools/clientcmd
 k8s.io/client-go/tools/clientcmd/api
+k8s.io/client-go/tools/clientcmd/api/latest
+k8s.io/client-go/tools/clientcmd/api/v1
 k8s.io/client-go/tools/leaderelection
 k8s.io/client-go/tools/leaderelection/resourcelock
 k8s.io/client-go/tools/metrics
@@ -659,6 +668,7 @@ k8s.io/client-go/transport
 k8s.io/client-go/util/cert
 k8s.io/client-go/util/connrotation
 k8s.io/client-go/util/flowcontrol
+k8s.io/client-go/util/homedir
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
@@ -725,9 +735,10 @@ k8s.io/kube-openapi/pkg/util/sets
 k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/trace
-# knative.dev/pkg v0.0.0-20201006044120-247841408e57
+# knative.dev/pkg v0.0.0-20201006235820-46761ba7c3dc
 ## explicit
 knative.dev/pkg/apis
+knative.dev/pkg/apis/duck
 knative.dev/pkg/apis/duck/ducktypes
 knative.dev/pkg/apis/duck/v1
 knative.dev/pkg/changeset
@@ -748,8 +759,10 @@ knative.dev/pkg/metrics
 knative.dev/pkg/metrics/metricskey
 knative.dev/pkg/network
 knative.dev/pkg/reconciler
+knative.dev/pkg/signals
 knative.dev/pkg/system
-# knative.dev/test-infra v0.0.0-20201006044420-26457f2cad45
+knative.dev/pkg/tracker
+# knative.dev/test-infra v0.0.0-20201006161322-f94f2bcbb2ee
 ## explicit
 knative.dev/test-infra/scripts
 knative.dev/test-infra/tools/dep-collector
