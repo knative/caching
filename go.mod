@@ -4,7 +4,6 @@ go 1.14
 
 require (
 	github.com/c2h5oh/datasize v0.0.0-20200112174442-28bbd4740fee // indirect
-	github.com/dgryski/go-lttb v0.0.0-20180810165845-318fcdf10a77 // indirect
 	github.com/google/go-cmp v0.5.2
 	github.com/google/licenseclassifier v0.0.0-20200708223521-3d09a0ea2f39
 	github.com/influxdata/tdigest v0.0.1 // indirect
@@ -16,8 +15,8 @@ require (
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.18.8
 	k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
-	knative.dev/pkg v0.0.0-20201014184531-9e655c6b02f6
-	knative.dev/test-infra v0.0.0-20201014021030-ae3984a33f82
+	knative.dev/pkg v0.0.0-20201015221656-1cc00f652a51
+	knative.dev/test-infra v0.0.0-20201015231956-d236fb0ea9ff
 )
 
 replace (
