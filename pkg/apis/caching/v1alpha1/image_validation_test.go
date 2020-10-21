@@ -51,6 +51,18 @@ func TestImageValidation(t *testing.T) {
 			},
 		},
 		want: apis.ErrMissingField("spec.imagePullSecrets[0].name"),
+	}, {
+		name: "nested multiple spec errors",
+		r: &Image{
+			Spec: ImageSpec{
+				Image: "busybox",
+				ImagePullSecrets: []corev1.LocalObjectReference{{
+					Name: "frankie",
+				}, {}, {}},
+			},
+		},
+		want: apis.ErrMissingField("spec.imagePullSecrets[1].name").
+			Also(apis.ErrMissingField("spec.imagePullSecrets[2].name")),
 	}}
 
 	for _, test := range tests {
