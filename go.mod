@@ -8,6 +8,7 @@ require (
 	github.com/google/licenseclassifier v0.0.0-20200708223521-3d09a0ea2f39
 	github.com/influxdata/tdigest v0.0.1 // indirect
 	github.com/miekg/dns v1.1.29 // indirect
+	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/tsenart/go-tsz v0.0.0-20180814235614-0bd30b3df1c3 // indirect
 	github.com/tsenart/vegeta v12.7.1-0.20190725001342-b5f4fca92137+incompatible
 	k8s.io/api v0.18.8
@@ -15,8 +16,8 @@ require (
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.18.8
 	k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
-	knative.dev/hack v0.0.0-20201028205534-fe80f1c8af68
-	knative.dev/pkg v0.0.0-20201029122234-6d905b3f84a6
+	knative.dev/hack v0.0.0-20201102193445-9349aeeb6701
+	knative.dev/pkg v0.0.0-20201102194004-c6a8219d518d
 )
 
 replace (
