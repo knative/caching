@@ -12,11 +12,11 @@ require (
 	github.com/tsenart/go-tsz v0.0.0-20180814235614-0bd30b3df1c3 // indirect
 	github.com/tsenart/vegeta v12.7.1-0.20190725001342-b5f4fca92137+incompatible
 	go.uber.org/multierr v1.6.0 // indirect
-	k8s.io/api v0.18.12
-	k8s.io/apimachinery v0.18.12
-	k8s.io/client-go v0.18.12
-	k8s.io/code-generator v0.18.12
-	k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29
+	k8s.io/api v0.19.7
+	k8s.io/apimachinery v0.19.7
+	k8s.io/client-go v0.19.7
+	k8s.io/code-generator v0.19.7
+	k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 	knative.dev/hack v0.0.0-20210120165453-8d623a0af457
-	knative.dev/pkg v0.0.0-20210120200253-8cd47b5af35d
+	knative.dev/pkg v0.0.0-20210124203454-7101e9d4f6c6
 )
