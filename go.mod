@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/c2h5oh/datasize v0.0.0-20200112174442-28bbd4740fee // indirect
-	github.com/google/go-cmp v0.5.4
+	github.com/google/go-cmp v0.5.5
 	github.com/google/licenseclassifier v0.0.0-20200708223521-3d09a0ea2f39
 	github.com/influxdata/tdigest v0.0.1 // indirect
 	github.com/miekg/dns v1.1.29 // indirect
@@ -18,5 +18,5 @@ require (
 	k8s.io/code-generator v0.19.7
 	k8s.io/kube-openapi v0.0.0-20200805222855-6aeccd4b50c6
 	knative.dev/hack v0.0.0-20210309141825-9b73a256fd9a
-	knative.dev/pkg v0.0.0-20210311174826-40488532be3f
+	knative.dev/pkg v0.0.0-20210315160101-6a33a1ab29ac
 )
