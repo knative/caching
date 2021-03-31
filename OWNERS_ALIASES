@@ -1,5 +1,5 @@
 aliases:
-  caching-approvers:
+  serving-writers:
   - dprotaso
   - evankanderson
   - grantr
@@ -9,7 +9,7 @@ aliases:
   - vagababov
   - vaikas
 
-  productivity-approvers:
+  productivity-writers:
   - chaodaiG
   - chizhg
   productivity-reviewers:
