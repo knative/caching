@@ -17,15 +17,11 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"reflect"
-	"sort"
-	"time"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/kmeta"
 )
 
@@ -103,11 +99,7 @@ type ImageCondition struct {
 
 // ImageStatus communicates the observed state of the Image (from the controller).
 type ImageStatus struct {
-	// Conditions communicates information about ongoing/complete
-	// reconciliation processes that bring the "spec" inline with the observed
-	// state of the world.
-	// +optional
-	Conditions []ImageCondition `json:"conditions,omitempty"`
+	duckv1.Status `json:",inline"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -118,66 +110,4 @@ type ImageList struct {
 	metav1.ListMeta `json:"metadata"`
 
 	Items []Image `json:"items"`
-}
-
-// IsReady looks at the conditions and if the Status has a condition
-// ImageConditionReady returns true if ConditionStatus is True
-func (rs *ImageStatus) IsReady() bool {
-	if c := rs.GetCondition(ImageConditionReady); c != nil {
-		return c.Status == corev1.ConditionTrue
-	}
-	return false
-}
-
-func (rs *ImageStatus) GetCondition(t ImageConditionType) *ImageCondition {
-	for _, cond := range rs.Conditions {
-		if cond.Type == t {
-			return &cond
-		}
-	}
-	return nil
-}
-
-func (rs *ImageStatus) SetCondition(new *ImageCondition) {
-	if new == nil {
-		return
-	}
-
-	t := new.Type
-	var conditions []ImageCondition
-	for _, cond := range rs.Conditions {
-		if cond.Type != t {
-			conditions = append(conditions, cond)
-		} else {
-			// If we'd only update the LastTransitionTime, then return.
-			new.LastTransitionTime = cond.LastTransitionTime
-			if reflect.DeepEqual(new, &cond) {
-				return
-			}
-		}
-	}
-	new.LastTransitionTime = apis.VolatileTime{
-		Inner: metav1.NewTime(time.Now()),
-	}
-	conditions = append(conditions, *new)
-	// Deterministically order the conditions
-	sort.Slice(conditions, func(i, j int) bool { return conditions[i].Type < conditions[j].Type })
-	rs.Conditions = conditions
-}
-
-func (rs *ImageStatus) InitializeConditions() {
-	for _, cond := range []ImageConditionType{
-		ImageConditionReady,
-	} {
-		if rc := rs.GetCondition(cond); rc == nil {
-			rs.SetCondition(&ImageCondition{
-				Type:   cond,
-				Status: corev1.ConditionUnknown,
-			})
-		}
-	}
-}
-
-func (i *Image) GetGroupVersionKind() schema.GroupVersionKind {
-	return SchemeGroupVersion.WithKind("Image")
 }
