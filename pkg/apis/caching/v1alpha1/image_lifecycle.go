@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"knative.dev/pkg/apis"
 )
@@ -36,20 +37,25 @@ func (i *Image) GetGroupVersionKind() schema.GroupVersionKind {
 }
 
 // GetConditionSet retrieves the condition set for this resource. Implements the KRShaped interface.
-func (as *ImageStatus) GetConditionSet() apis.ConditionSet {
+func (i *Image) GetConditionSet() apis.ConditionSet {
 	return condSet
 }
 
 // InitializeConditions sets the initial values to the conditions.
-func (ds *ImageStatus) InitializeConditions() {
-	condSet.Manage(ds).InitializeConditions()
+func (is *ImageStatus) InitializeConditions() {
+	condSet.Manage(is).InitializeConditions()
 }
 
 // IsReady looks at the conditions and if the Status has a condition
 // ImageConditionReady returns true if ConditionStatus is True
-func (rs *ImageStatus) IsReady() bool {
-	if c := rs.GetCondition(ImageCacheConditionReady); c != nil {
+func (is *ImageStatus) IsReady() bool {
+	if c := is.GetCondition(ImageCacheConditionReady); c != nil {
 		return c.Status == corev1.ConditionTrue
 	}
 	return false
+}
+
+// GetStatus retrieves the status of the Image. Implements the KRShaped interface.
+func (t *Image) GetStatus() *duckv1.Status {
+	return &t.Status.Status
 }

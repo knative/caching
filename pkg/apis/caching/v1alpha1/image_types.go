@@ -49,6 +49,7 @@ type Image struct {
 var _ apis.Validatable = (*Image)(nil)
 var _ apis.Defaultable = (*Image)(nil)
 var _ kmeta.OwnerRefable = (*Image)(nil)
+var _ duckv1.KRShaped = (*Image)(nil)
 
 // ImageSpec holds the desired state of the Image (from the client).
 type ImageSpec struct {
