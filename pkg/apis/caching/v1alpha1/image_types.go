@@ -69,33 +69,11 @@ type ImageSpec struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
-// ImageConditionType is used to communicate the status of the reconciliation process.
-type ImageConditionType string
-
 const (
 	// ImageConditionReady is set when the revision is starting to materialize
 	// runtime resources, and becomes true when those resources are ready.
-	ImageConditionReady ImageConditionType = "Ready"
+	ImageConditionReady = apis.ConditionReady
 )
-
-// ImageCondition defines a readiness condition for a Image.
-// See: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#typical-status-properties
-type ImageCondition struct {
-	Type ImageConditionType `json:"type" description:"type of Image condition"`
-
-	Status corev1.ConditionStatus `json:"status" description:"status of the condition, one of True, False, Unknown"`
-
-	// +optional
-	// We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic
-	// differences (all other things held constant).
-	LastTransitionTime apis.VolatileTime `json:"lastTransitionTime,omitempty" description:"last time the condition transit from one status to another"`
-
-	// +optional
-	Reason string `json:"reason,omitempty" description:"one-word CamelCase reason for the condition's last transition"`
-
-	// +optional
-	Message string `json:"message,omitempty" description:"human-readable message indicating details about last transition"`
-}
 
 // ImageStatus communicates the observed state of the Image (from the controller).
 type ImageStatus struct {

@@ -16,14 +16,9 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"testing"
-	"time"
-
-	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"testing"
 )
 
 func TestIsReady(t *testing.T) {
@@ -38,69 +33,84 @@ func TestIsReady(t *testing.T) {
 	}, {
 		name: "Different condition type should not be ready",
 		status: ImageStatus{
-			Conditions: []ImageCondition{{
-				Type:   "foo",
-				Status: corev1.ConditionTrue,
-			}},
+			Status: duckv1.Status{
+				ObservedGeneration: 0,
+				Conditions: duckv1.Conditions{{
+					Type:   "foo",
+					Status: corev1.ConditionTrue,
+				},
+				}},
 		},
 		isReady: false,
 	}, {
 		name: "False condition status should not be ready",
 		status: ImageStatus{
-			Conditions: []ImageCondition{{
-				Type:   ImageConditionReady,
-				Status: corev1.ConditionFalse,
-			}},
+			Status: duckv1.Status{
+				Conditions: duckv1.Conditions{{
+					Type:   ImageConditionReady,
+					Status: corev1.ConditionFalse,
+				}},
+			},
 		},
 		isReady: false,
 	}, {
 		name: "Unknown condition status should not be ready",
 		status: ImageStatus{
-			Conditions: []ImageCondition{{
-				Type:   ImageConditionReady,
-				Status: corev1.ConditionUnknown,
-			}},
+			Status: duckv1.Status{
+				Conditions: duckv1.Conditions{{
+					Type:   ImageConditionReady,
+					Status: corev1.ConditionUnknown,
+				}},
+			},
 		},
 		isReady: false,
 	}, {
 		name: "Missing condition status should not be ready",
 		status: ImageStatus{
-			Conditions: []ImageCondition{{
-				Type: ImageConditionReady,
-			}},
+			Status: duckv1.Status{
+				Conditions: duckv1.Conditions{{
+					Type: ImageConditionReady,
+				}},
+			},
 		},
 		isReady: false,
 	}, {
 		name: "True condition status should be ready",
 		status: ImageStatus{
-			Conditions: []ImageCondition{{
-				Type:   ImageConditionReady,
-				Status: corev1.ConditionTrue,
-			}},
+			Status: duckv1.Status{
+				Conditions: duckv1.Conditions{{
+					Type:   ImageConditionReady,
+					Status: corev1.ConditionTrue,
+				}},
+			},
 		},
 		isReady: true,
 	}, {
 		name: "Multiple conditions with ready status should be ready",
 		status: ImageStatus{
-			Conditions: []ImageCondition{{
-				Type:   "foo",
-				Status: corev1.ConditionTrue,
-			}, {
-				Type:   ImageConditionReady,
-				Status: corev1.ConditionTrue,
-			}},
+			Status: duckv1.Status{
+				Conditions: duckv1.Conditions{{
+					Type:   "foo",
+					Status: corev1.ConditionTrue,
+				}, {
+					Type:   ImageConditionReady,
+					Status: corev1.ConditionTrue,
+				}},
+			},
 		},
 		isReady: true,
 	}, {
 		name: "Multiple conditions with ready status false should not be ready",
 		status: ImageStatus{
-			Conditions: []ImageCondition{{
-				Type:   "foo",
-				Status: corev1.ConditionTrue,
-			}, {
-				Type:   ImageConditionReady,
-				Status: corev1.ConditionFalse,
-			}},
+			Status: duckv1.Status{
+				Conditions: duckv1.Conditions{{
+					Type:   "foo",
+					Status: corev1.ConditionTrue,
+				}, {
+					Type:   ImageConditionReady,
+					Status: corev1.ConditionFalse,
+				}},
+			},
 		},
 		isReady: false,
 	}}
@@ -111,59 +121,5 @@ func TestIsReady(t *testing.T) {
 				t.Errorf("%q expected: %v got: %v", tc.name, e, a)
 			}
 		})
-	}
-}
-
-func TestImageConditions(t *testing.T) {
-	rev := &Image{}
-	foo := &ImageCondition{
-		Type:   "Foo",
-		Status: "True",
-	}
-	bar := &ImageCondition{
-		Type:   "Bar",
-		Status: "True",
-	}
-
-	// Add a new condition.
-	rev.Status.SetCondition(foo)
-
-	if got, want := len(rev.Status.Conditions), 1; got != want {
-		t.Fatalf("Unexpected Condition length; got %d, want %d", got, want)
-	}
-
-	// Add nothing
-	rev.Status.SetCondition(nil)
-
-	if got, want := len(rev.Status.Conditions), 1; got != want {
-		t.Fatalf("Unexpected Condition length; got %d, want %d", got, want)
-	}
-
-	// Add a second condition.
-	rev.Status.SetCondition(bar)
-
-	if got, want := len(rev.Status.Conditions), 2; got != want {
-		t.Fatalf("Unexpected Condition length; got %d, want %d", got, want)
-	}
-
-	// Add nil condition.
-	rev.Status.SetCondition(nil)
-
-	if got, want := len(rev.Status.Conditions), 2; got != want {
-		t.Fatalf("Unexpected Condition length; got %d, want %d", got, want)
-	}
-
-	// Add a condition that varies only in LastTransitionTime, and check that
-	// things are not updated.
-	bar = rev.Status.GetCondition("Bar")
-	bar2 := bar.DeepCopy()
-	bar2.LastTransitionTime = apis.VolatileTime{
-		Inner: metav1.NewTime(time.Unix(1234, 0)),
-	}
-	rev.Status.SetCondition(bar2)
-
-	got, want := rev.Status.GetCondition("Bar"), bar
-	if diff := cmp.Diff(want, got); diff != "" {
-		t.Error("Unexpected traffic diff (-want +got):", diff)
 	}
 }
