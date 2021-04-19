@@ -20,20 +20,23 @@ import (
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 func TestIsReady(t *testing.T) {
 	cases := []struct {
-		name    string
-		status  ImageStatus
-		isReady bool
+		name       string
+		generation int64
+		status     ImageStatus
+		isReady    bool
 	}{{
 		name:    "empty status should not be ready",
 		status:  ImageStatus{},
 		isReady: false,
 	}, {
-		name: "Different condition type should not be ready",
+		name:       "Different condition type should not be ready",
+		generation: 0,
 		status: ImageStatus{
 			Status: duckv1.Status{
 				ObservedGeneration: 0,
@@ -45,9 +48,11 @@ func TestIsReady(t *testing.T) {
 		},
 		isReady: false,
 	}, {
-		name: "False condition status should not be ready",
+		name:       "False condition status should not be ready",
+		generation: 0,
 		status: ImageStatus{
 			Status: duckv1.Status{
+				ObservedGeneration: 0,
 				Conditions: duckv1.Conditions{{
 					Type:   ImageConditionReady,
 					Status: corev1.ConditionFalse,
@@ -56,9 +61,11 @@ func TestIsReady(t *testing.T) {
 		},
 		isReady: false,
 	}, {
-		name: "Unknown condition status should not be ready",
+		name:       "Unknown condition status should not be ready",
+		generation: 0,
 		status: ImageStatus{
 			Status: duckv1.Status{
+				ObservedGeneration: 0,
 				Conditions: duckv1.Conditions{{
 					Type:   ImageConditionReady,
 					Status: corev1.ConditionUnknown,
@@ -67,9 +74,11 @@ func TestIsReady(t *testing.T) {
 		},
 		isReady: false,
 	}, {
-		name: "Missing condition status should not be ready",
+		name:       "Missing condition status should not be ready",
+		generation: 0,
 		status: ImageStatus{
 			Status: duckv1.Status{
+				ObservedGeneration: 0,
 				Conditions: duckv1.Conditions{{
 					Type: ImageConditionReady,
 				}},
@@ -77,9 +86,11 @@ func TestIsReady(t *testing.T) {
 		},
 		isReady: false,
 	}, {
-		name: "True condition status should be ready",
+		name:       "True condition status should be ready",
+		generation: 0,
 		status: ImageStatus{
 			Status: duckv1.Status{
+				ObservedGeneration: 0,
 				Conditions: duckv1.Conditions{{
 					Type:   ImageConditionReady,
 					Status: corev1.ConditionTrue,
@@ -88,9 +99,11 @@ func TestIsReady(t *testing.T) {
 		},
 		isReady: true,
 	}, {
-		name: "Multiple conditions with ready status should be ready",
+		name:       "Multiple conditions with ready status should be ready",
+		generation: 0,
 		status: ImageStatus{
 			Status: duckv1.Status{
+				ObservedGeneration: 0,
 				Conditions: duckv1.Conditions{{
 					Type:   "foo",
 					Status: corev1.ConditionTrue,
@@ -102,9 +115,27 @@ func TestIsReady(t *testing.T) {
 		},
 		isReady: true,
 	}, {
-		name: "Multiple conditions with ready status false should not be ready",
+		name:       "Multiple conditions with ready status false should not be ready",
+		generation: 0,
 		status: ImageStatus{
 			Status: duckv1.Status{
+				ObservedGeneration: 0,
+				Conditions: duckv1.Conditions{{
+					Type:   "foo",
+					Status: corev1.ConditionTrue,
+				}, {
+					Type:   ImageConditionReady,
+					Status: corev1.ConditionFalse,
+				}},
+			},
+		},
+		isReady: false,
+	}, {
+		name:       "Generation not equal ObservedGeneration should not be ready",
+		generation: 1,
+		status: ImageStatus{
+			Status: duckv1.Status{
+				ObservedGeneration: 2,
 				Conditions: duckv1.Conditions{{
 					Type:   "foo",
 					Status: corev1.ConditionTrue,
@@ -119,15 +150,13 @@ func TestIsReady(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			m := Image{Status: tc.status}
+			m := Image{
+				ObjectMeta: metav1.ObjectMeta{
+					Generation: tc.generation,
+				},
+				Status: tc.status}
 			if e, a := tc.isReady, m.IsReady(); e != a {
 				t.Errorf("Ready = %v, want: %v", a, e)
-			}
-
-			m.Generation = 1
-			m.Status.ObservedGeneration = 2
-			if m.IsReady() {
-				t.Error("Expected IsReady() to be false when Generation != ObservedGeneration")
 			}
 		})
 	}
