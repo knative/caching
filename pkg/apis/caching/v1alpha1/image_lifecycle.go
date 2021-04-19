@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
@@ -25,8 +24,9 @@ import (
 )
 
 const (
-	// ImageCacheConditionReady has status True when the SampleSource is ready to send events.
-	ImageCacheConditionReady = apis.ConditionReady
+	// ImageConditionReady is set when the revision is starting to materialize
+	// runtime resources, and becomes true when those resources are ready.
+	ImageConditionReady = apis.ConditionReady
 )
 
 var condSet = apis.NewLivingConditionSet()
@@ -48,11 +48,10 @@ func (is *ImageStatus) InitializeConditions() {
 
 // IsReady looks at the conditions and if the Status has a condition
 // ImageConditionReady returns true if ConditionStatus is True
-func (is *ImageStatus) IsReady() bool {
-	if c := is.GetCondition(ImageCacheConditionReady); c != nil {
-		return c.Status == corev1.ConditionTrue
-	}
-	return false
+func (i *Image) IsReady() bool {
+	is := i.Status
+	return is.ObservedGeneration == i.Generation &&
+		is.GetCondition(ImageConditionReady).IsTrue()
 }
 
 // GetStatus retrieves the status of the Image. Implements the KRShaped interface.

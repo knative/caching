@@ -70,12 +70,6 @@ type ImageSpec struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
-const (
-	// ImageConditionReady is set when the revision is starting to materialize
-	// runtime resources, and becomes true when those resources are ready.
-	ImageConditionReady = apis.ConditionReady
-)
-
 // ImageStatus communicates the observed state of the Image (from the controller).
 type ImageStatus struct {
 	duckv1.Status `json:",inline"`

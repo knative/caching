@@ -119,8 +119,15 @@ func TestIsReady(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if e, a := tc.isReady, tc.status.IsReady(); e != a {
-				t.Errorf("%q expected: %v got: %v", tc.name, e, a)
+			m := Image{Status: tc.status}
+			if e, a := tc.isReady, m.IsReady(); e != a {
+				t.Errorf("Ready = %v, want: %v", a, e)
+			}
+
+			m.Generation = 1
+			m.Status.ObservedGeneration = 2
+			if m.IsReady() {
+				t.Error("Expected IsReady() to be false when Generation != ObservedGeneration")
 			}
 		})
 	}
