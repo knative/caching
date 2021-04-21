@@ -22,6 +22,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	apistest "knative.dev/pkg/apis/testing"
 )
 
 func TestIsReady(t *testing.T) {
@@ -160,4 +161,32 @@ func TestIsReady(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestImageTypicalFlow(t *testing.T) {
+	r := &ImageStatus{}
+	r.InitializeConditions()
+
+	apistest.CheckConditionOngoing(r, ImageConditionReady, t)
+
+	// Then image is pending.
+	r.MarkReadyUnknown()
+	apistest.CheckConditionOngoing(r, ImageConditionReady, t)
+
+	// Then image is failed
+	r.MarkReadyFalse("some reason", "some message")
+	apistest.CheckConditionFailed(r, ImageConditionReady, t)
+
+	// Then image is ready.
+
+	r.MarkReadyTrue()
+	apistest.CheckConditionSucceeded(r, ImageConditionReady, t)
+	i := &Image{Status: *r}
+	if !i.IsReady() {
+		t.Fatal("IsReady()=false, wanted true")
+	}
+
+	// Mark image not ready
+	r.MarkReadyUnknown()
+	apistest.CheckConditionOngoing(r, ImageConditionReady, t)
 }
