@@ -671,6 +671,7 @@ knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
 knative.dev/pkg/apis/duck/ducktypes
 knative.dev/pkg/apis/duck/v1
+knative.dev/pkg/apis/testing
 knative.dev/pkg/changeset
 knative.dev/pkg/client/injection/kube/client
 knative.dev/pkg/codegen/cmd/injection-gen
