@@ -170,16 +170,16 @@ func TestImageTypicalFlow(t *testing.T) {
 	apistest.CheckConditionOngoing(r, ImageConditionReady, t)
 
 	// Then image is pending.
-	r.MarkImageNotReady()
+	r.MarkReadyUnknown()
 	apistest.CheckConditionOngoing(r, ImageConditionReady, t)
 
 	// Then image is failed
-	r.MarkImageFailed("some reason", "some message")
+	r.MarkReadyFalse("some reason", "some message")
 	apistest.CheckConditionFailed(r, ImageConditionReady, t)
 
 	// Then image is ready.
 
-	r.MarkImageReady()
+	r.MarkReadyTrue()
 	apistest.CheckConditionSucceeded(r, ImageConditionReady, t)
 	i := &Image{Status: *r}
 	if !i.IsReady() {
@@ -187,6 +187,6 @@ func TestImageTypicalFlow(t *testing.T) {
 	}
 
 	// Mark image not ready
-	r.MarkImageNotReady()
+	r.MarkReadyUnknown()
 	apistest.CheckConditionOngoing(r, ImageConditionReady, t)
 }
