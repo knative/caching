@@ -13,12 +13,12 @@ require (
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/tsenart/go-tsz v0.0.0-20180814235614-0bd30b3df1c3 // indirect
 	github.com/tsenart/vegeta v12.7.1-0.20190725001342-b5f4fca92137+incompatible
-	go.uber.org/zap v1.17.0
+	go.uber.org/zap v1.18.1
 	k8s.io/api v0.20.7
 	k8s.io/apimachinery v0.20.7
 	k8s.io/client-go v0.20.7
 	k8s.io/code-generator v0.20.7
 	k8s.io/kube-openapi v0.0.0-20201113171705-d219536bb9fd
 	knative.dev/hack v0.0.0-20210622141627-e28525d8d260
-	knative.dev/pkg v0.0.0-20210628225612-51cfaabbcdf6
+	knative.dev/pkg v0.0.0-20210712150822-e8973c6acbf7
 )
