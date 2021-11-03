@@ -4,7 +4,6 @@ go 1.15
 
 require (
 	github.com/c2h5oh/datasize v0.0.0-20200112174442-28bbd4740fee // indirect
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-openapi/spec v0.19.6 // indirect
 	github.com/google/go-cmp v0.5.6
 	github.com/google/licenseclassifier v0.0.0-20200708223521-3d09a0ea2f39
@@ -20,6 +19,6 @@ require (
 	k8s.io/client-go v0.21.4
 	k8s.io/code-generator v0.21.4
 	k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7
-	knative.dev/hack v0.0.0-20211101195839-11d193bf617b
-	knative.dev/pkg v0.0.0-20211101212339-96c0204a70dc
+	knative.dev/hack v0.0.0-20211102174540-b284d49386cc
+	knative.dev/pkg v0.0.0-20211103135647-464034912f7e
 )
