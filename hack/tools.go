@@ -33,10 +33,4 @@ import (
 	_ "k8s.io/code-generator/cmd/lister-gen"
 	_ "k8s.io/kube-openapi/cmd/openapi-gen"
 	_ "knative.dev/pkg/codegen/cmd/injection-gen"
-
-	// Licenseclassifier
-	_ "github.com/google/licenseclassifier"
-
-	// For load testing
-	_ "github.com/tsenart/vegeta"
 )
