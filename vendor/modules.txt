@@ -606,7 +606,7 @@ k8s.io/utils/integer
 k8s.io/utils/internal/third_party/forked/golang/net
 k8s.io/utils/net
 k8s.io/utils/trace
-# knative.dev/hack v0.0.0-20220722185521-123a2783c4d8
+# knative.dev/hack v0.0.0-20220725143223-92c7e36069eb
 ## explicit
 knative.dev/hack
 # knative.dev/pkg v0.0.0-20220722175921-6c9c1c6098d5
