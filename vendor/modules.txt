@@ -684,7 +684,7 @@ k8s.io/utils/internal/third_party/forked/golang/net
 k8s.io/utils/net
 k8s.io/utils/strings/slices
 k8s.io/utils/trace
-# knative.dev/hack v0.0.0-20220914183605-d1317b08c0c3
+# knative.dev/hack v0.0.0-20220923094413-9b7638704a22
 ## explicit; go 1.18
 knative.dev/hack
 # knative.dev/pkg v0.0.0-20220921024409-d1d5c849073b
