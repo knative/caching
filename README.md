@@ -11,4 +11,5 @@ To learn more about Knative, please visit our
 [Knative docs](https://github.com/knative/docs) repository.
 
 If you are interested in contributing, see [CONTRIBUTING.md](./CONTRIBUTING.md)
-and [DEVELOPMENT.md](./DEVELOPMENT.md).
+and [DEVELOPMENT.md](./DEVELOPMENT.md). For a list of all help wanted issues in Knative,
+see [CLOTRIBUTOR](https://clotributor.dev/search?project=knative&page=1).
