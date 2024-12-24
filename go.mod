@@ -10,8 +10,8 @@ require (
 	k8s.io/client-go v0.30.3
 	k8s.io/code-generator v0.30.3
 	k8s.io/kube-openapi v0.0.0-20240808142205-8e686545bdb8
-	knative.dev/hack v0.0.0-20241106013728-b7995315deb5
-	knative.dev/pkg v0.0.0-20241118074447-a7fd9b10bb9f
+	knative.dev/hack v0.0.0-20241223131256-cad8c71aac6f
+	knative.dev/pkg v0.0.0-20241223131119-4c901591eb4a
 )
 
 require (
