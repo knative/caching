@@ -1,0 +1,217 @@
+version: "2"
+run:
+  build-tags:
+    - e2e
+    - hpa
+    - upgrade
+  allow-parallel-runners: true
+output:
+  sort-order:
+    - linter
+    - file
+linters:
+  enable:
+    # Check for pass []any as any in variadic func(...any).
+    - asasalint
+
+    # Only use ASCII chars in indentifiers
+    - asciicheck
+
+    # Dangerous unicode characters
+    - bidichk
+
+    # Checks whether HTTP response body is closed successfully.
+    - bodyclose
+
+    # Canonicalheader checks whether net/http.Header uses canonical header.
+    - canonicalheader
+
+    # TODO - do a follow up PR
+    # # Containedctx is a linter that detects struct contained context.Context
+    # # field.
+    # - containedctx
+    #
+    # TODO - do a follow up PR
+    # # Check whether the function uses a non-inherited context.
+    # - contextcheck
+
+    # Copyloopvar is a linter detects places where loop variables are copied.
+    - copyloopvar
+
+    # Check declaration order of types, consts, vars and funcs.
+    - decorder
+
+    # Check for two durations multiplied together.
+    - durationcheck
+
+    # Checks that sentinel errors are prefixed with the Err- and error types
+    # are suffixed with the -Error.
+    - errname
+
+    # Errorlint is a linter for that can be used to find code that will cause
+    # problems with the error wrapping scheme introduced in Go 1.13.
+    - errorlint
+
+    # Detects nested contexts in loops.
+    - fatcontext
+
+    # Checks that go compiler directive comments (//go:) are valid.
+    - gocheckcompilerdirectives
+
+    # Provides diagnostics that check for bugs, performance and style issues.
+    # Extensible without recompilation through dynamic rules.
+    # Dynamic rules are written declaratively with AST patterns, filters,
+    # report message and optional suggestion.
+    - gocritic
+
+    # See config below
+    - gomodguard
+
+    # Inspects source code for security problems.
+    - gosec
+
+    # Intrange is a linter to find places where for loops could make use of
+    # an integer range.
+    - intrange
+
+    # Checks key value pairs for common logger libraries (kitlog,klog,logr,zap).
+    - loggercheck
+
+    # Finds slice declarations with non-zero initial length.
+    - makezero
+
+    # Reports wrong mirror patterns of bytes/strings usage
+    - mirror
+
+    # Finds commonly misspelled English words.
+    - misspell
+
+    # Finds the code that returns nil even if it checks that the error is not nil.
+    - nilerr
+
+    # Finds sending HTTP request without context.Context.
+    - noctx
+
+    # Reports ill-formed or insufficient nolint directives.
+    - nolintlint
+
+    # Checks for misuse of Sprintf to construct a host with port in a URL.
+    - nosprintfhostport
+
+    # Checks that fmt.Sprintf can be replaced with a faster alternative.
+    - perfsprint
+
+    # Finds slice declarations that could potentially be pre-allocated.
+    - prealloc
+
+    # Reports direct reads from proto message fields when getters should be used.
+    - protogetter
+
+    # Checks that package variables are not reassigned.
+    - reassign
+
+    # Fast, configurable, extensible, flexible, and beautiful linter for
+    # Go. Drop-in replacement of golint.
+    - revive
+
+    # Checks for mistakes with OpenTelemetry/Census spans.
+    - spancheck
+
+    - staticcheck
+
+    # Linter checks if examples are testable (have an expected output).
+    - testableexamples
+
+    # Remove unnecessary type conversions.
+    - unconvert
+
+    # Reports unused function parameters and results in your code.
+    - unparam
+
+    # A linter that detect the possibility to use variables/constants from the
+    # Go standard library.
+    - usestdlibvars
+
+    # Finds wasted assignment statements.
+    - wastedassign
+
+    # Whitespace is a linter that checks for unnecessary newlines at the start
+    # and end of functions, if, for, etc.
+    - whitespace
+  disable:
+    - errcheck
+  settings:
+    staticcheck:
+      checks:
+      - all
+      - "-QF1008" # Disable https://staticcheck.dev/docs/checks/#QF1008
+    gocritic:
+      disabled-checks:
+        - exitAfterDefer
+        - appendAssign
+    gomodguard:
+      blocked:
+        modules:
+          - github.com/ghodss/yaml:
+              recommendations:
+                - sigs.k8s.io/yaml
+          - go.uber.org/atomic:
+              recommendations:
+                - sync/atomic
+          - io/ioutil:
+              recommendations:
+                - os
+                - io
+          - github.com/hashicorp/go-multierror:
+              recommendations:
+                - errors
+              reason: use errors.Join
+          - go.uber.org/multierr:
+              recommendations:
+                - errors
+              reason: use errors.Join
+    revive:
+      rules:
+        - name: unused-parameter
+          disabled: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - staticcheck
+        text: corev1.Endpoint.* is deprecated
+      - linters:
+          - gosec
+          - noctx
+          - protogetter
+          - unparam
+        path: test
+      - linters:
+          - gocritic
+        text: ifElseChain
+    paths:
+      - pkg/client
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  uniq-by-line: true
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - pkg/client
+      - third_party$
+      - builtin$
+      - examples$
