@@ -11,7 +11,7 @@ require (
 	k8s.io/code-generator v0.33.1
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff
 	knative.dev/hack v0.0.0-20250514121446-f525e187efdc
-	knative.dev/pkg v0.0.0-20250626040505-5e2512c7127f
+	knative.dev/pkg v0.0.0-20250627005806-7681e80bae5f
 )
 
 require (
