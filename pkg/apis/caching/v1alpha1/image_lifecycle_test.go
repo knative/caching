@@ -41,11 +41,13 @@ func TestIsReady(t *testing.T) {
 		status: ImageStatus{
 			Status: duckv1.Status{
 				ObservedGeneration: 0,
-				Conditions: duckv1.Conditions{{
-					Type:   "foo",
-					Status: corev1.ConditionTrue,
+				Conditions: duckv1.Conditions{
+					{
+						Type:   "foo",
+						Status: corev1.ConditionTrue,
+					},
 				},
-				}},
+			},
 		},
 		isReady: false,
 	}, {
@@ -155,7 +157,8 @@ func TestIsReady(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Generation: tc.generation,
 				},
-				Status: tc.status}
+				Status: tc.status,
+			}
 			if e, a := tc.isReady, m.IsReady(); e != a {
 				t.Errorf("Ready = %v, want: %v", a, e)
 			}
