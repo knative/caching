@@ -5,13 +5,13 @@ go 1.24.0
 require (
 	github.com/google/go-cmp v0.7.0
 	go.uber.org/zap v1.27.0
-	k8s.io/api v0.33.4
-	k8s.io/apimachinery v0.33.4
-	k8s.io/client-go v0.33.4
-	k8s.io/code-generator v0.33.4
+	k8s.io/api v0.33.5
+	k8s.io/apimachinery v0.33.5
+	k8s.io/client-go v0.33.5
+	k8s.io/code-generator v0.33.5
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff
 	knative.dev/hack v0.0.0-20250902153942-1499de21e119
-	knative.dev/pkg v0.0.0-20250915135827-db4c336acdbe
+	knative.dev/pkg v0.0.0-20251007000110-e53fcbb06907
 )
 
 require (
