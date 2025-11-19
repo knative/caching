@@ -5,13 +5,13 @@ go 1.24.0
 require (
 	github.com/google/go-cmp v0.7.0
 	go.uber.org/zap v1.27.0
-	k8s.io/api v0.34.1
-	k8s.io/apimachinery v0.34.1
-	k8s.io/client-go v0.34.1
-	k8s.io/code-generator v0.34.1
+	k8s.io/api v0.34.2
+	k8s.io/apimachinery v0.34.2
+	k8s.io/client-go v0.34.2
+	k8s.io/code-generator v0.34.2
 	k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b
-	knative.dev/hack v0.0.0-20251103013745-91eedd9bef96
-	knative.dev/pkg v0.0.0-20251104154049-5037c4760829
+	knative.dev/hack v0.0.0-20251117013754-67a5b048bc27
+	knative.dev/pkg v0.0.0-20251118173915-745990698d3c
 )
 
 require (
@@ -50,7 +50,7 @@ require (
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.17.0 // indirect
+	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/term v0.36.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
